@@ -39,8 +39,8 @@ They are locally reached from:
 or public (via URL Rewrite)
 
 - `https://your-URL/admin/forms.html`
-- `https://your-URL/admin/forms.html`
-- `https://your-URL/admin/forms.html`
+- `https://your-URL/admin/submissions.html`
+- `https://your-URL/admin/login.html`
 
 ---
 

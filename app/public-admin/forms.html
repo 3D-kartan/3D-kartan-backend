@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>3D-kartan Formulärbyggaren – Admin</title>
+
+  <link rel="stylesheet" href="/admin/vendor/bootstrap.min.css">
+  <link rel="stylesheet" href="/admin/vendor/formio.full.min.css" />
+
+  <style>
+    :root {
+      --panel-bg: #ffffff;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --soft: #f8fafc;
+    }
+
+    body { background: #f3f4f6; }
+    .app { padding: 16px; max-width: 1200px; margin: 0 auto; }
+    .card { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .card-header { background: var(--panel-bg); border-bottom: 1px solid var(--border); }
+    .card-body { background: var(--panel-bg); }
+    .subtle { color: var(--muted); font-size: 0.9rem; }
+
+    #builderWrap { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--soft); }
+    #builder { height: 72vh; background: #fff; }
+
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .toolbar .spacer { flex: 1; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    .statusBox {
+      background: #0b1220;
+      color: #d1d5db;
+      padding: 12px;
+      border-radius: 10px;
+      max-height: 220px;
+      overflow: auto;
+      border: 1px solid #111827;
+    }
+
+    .badge-dirty { background: #f59e0b; color: #111827; }
+    .badge-saved { background: #10b981; }
+    .badge-pill { border-radius: 999px; padding: 4px 10px; font-weight: 600; font-size: 12px; }
+
+    .toastHost { position: fixed; right: 16px; top: 16px; z-index: 10000; display: flex; flex-direction: column; gap: 8px; }
+    .toast {
+      min-width: 260px;
+      max-width: 420px;
+      background: #111827;
+      color: #fff;
+      border: 1px solid #1f2937;
+      border-radius: 10px;
+      padding: 10px 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+    .toast .title { font-weight: 700; margin-bottom: 2px; }
+    .toast .msg { color: #d1d5db; font-size: 13px; }
+    .toast.success { border-color: rgba(16,185,129,0.7); }
+    .toast.error { border-color: rgba(239,68,68,0.7); }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.65);
+      backdrop-filter: blur(2px);
+      z-index: 50;
+    }
+    .overlay.show { display: flex; }
+
+    .dangerZone {
+      border: 1px solid rgba(239,68,68,0.25);
+      background: rgba(239,68,68,0.05);
+      border-radius: 10px;
+      padding: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="toastHost" id="toastHost"></div>
+
+  <div class="app">
+    <div class="d-flex align-items-baseline justify-content-between mb-3">
+      <div>
+        <h1 class="mb-1">3D-kartan Formulärbyggaren – Admin</h1>
+        <div class="subtle">Skapa, spara, publicera och radera Form.io-formulär.</div>
+      </div>
+      <div class="text-end">
+        <div class="mb-2">
+          <span id="saveState" class="badge-pill badge-saved">Sparad</span>
+        </div>
+        <!-- Ny: inloggningsinfo + logout-knapp -->
+        <div class="subtle">
+          <span id="currentUserLabel"></span>
+          <button id="logoutBtn" class="btn btn-sm btn-outline-secondary ms-2">Logga ut</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-header">
+        <div class="toolbar">
+          <div class="d-flex align-items-center">
+            <label class="me-2 fw-bold">Namn</label>
+            <input id="name" class="form-control" style="min-width: 320px;" value="Medborgardialog" />
+          </div>
+
+          <div class="d-flex align-items-center">
+            <label class="me-2 fw-bold">Form ID</label>
+            <input id="formId" class="form-control mono" style="min-width: 320px;" placeholder="Skapas vid Save (POST)" />
+          </div>
+
+          <div class="spacer"></div>
+
+          <button id="newBtn" class="btn btn-outline-secondary">Ny</button>
+          <button id="loadBtn" class="btn btn-outline-primary">Ladda</button>
+          <button id="saveBtn" class="btn btn-primary">Spara</button>
+          <button id="publishBtn" class="btn btn-success">Publicera</button>
+          <button id="archiveBtn" class="btn btn-warning">Arkivera</button>
+        </div>
+
+        <div class="subtle mt-2">
+          Tips: Spara först, publicera sedan för att den publika klienten ska kunna hämta schemat.
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="row">
+          <div class="col-lg-3 mb-3">
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="fw-bold">Formulär</div>
+              <button id="refreshListBtn" class="btn btn-sm btn-outline-secondary">Uppdatera</button>
+            </div>
+            <div class="subtle mb-2">
+              Hämtas från <span class="mono">GET /3d-kartan/backend/admin/forms</span>. Dubbelklicka för att ladda.
+            </div>
+            <select id="statusFilter" class="form-control form-control-sm mb-1">
+              <option value="all">All</option>
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+              <option value="finished">Finished</option>
+            </select>
+            <select id="formsList" class="form-control" size="12"></select>
+
+            <div class="dangerZone mt-3">
+              <div class="fw-bold text-danger">Radera</div>
+              <div class="subtle mb-2">
+                Raderar utkastet permanent från formulärbyggaren. Publicerade och arkiverade formulär kan bara raderas via databasen.
+              </div>
+
+              <button id="deleteBtn" class="btn btn-danger w-100">
+                Radera formulär…
+              </button>
+
+              <div class="subtle mt-2 mono" id="deleteHint"></div>
+            </div>
+          </div>
+
+          <div class="col-lg-9">
+            <div id="builderWrap" class="position-relative">
+              <div id="overlay" class="overlay">
+                <div class="text-center">
+                  <div class="spinner-border text-primary" role="status"></div>
+                  <div class="mt-2">Jobbar…</div>
+                </div>
+              </div>
+              <div id="builder"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-3">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <div class="fw-bold">Status (senaste svar)</div>
+            <button id="clearStatusBtn" class="btn btn-sm btn-outline-secondary">Rensa</button>
+          </div>
+          <pre id="status" class="statusBox mono mb-0">{}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/admin/vendor/formio.full.min.js"></script>
+  <script src="/admin/forms.js"></script>
+</body>
+</html>

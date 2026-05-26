@@ -1,0 +1,46 @@
+Third-Party Notices
+-------------------
+
+This application uses bootstrap (https://getbootstrap.com/).
+bootstrap is licensed under the MIT License.
+Full license text is available in ./licenses/BOOTSTRAP_LICENSE.txt.
+
+This application uses formiojs (https://github.com/formio/formio.js#readme).
+formiojs is licensed under the MIT License.
+Full license text is available in ./licenses/FORMIOJS_LICENSE.txt.
+
+This application uses bcrypt (https://github.com/kelektiv/node.bcrypt.js#readme).
+bcrypt is licensed under the MIT License.
+Full license text is available in ./licenses/BCRYPT_LICENSE.txt.
+
+This application uses cookie-parser (https://github.com/expressjs/cookie-parser#readme).
+cookie-parser is licensed under the MIT License.
+Full license text is available in ./licenses/COOKIE-PARSER_LICENSE.txt.
+
+This application uses cors (https://github.com/expressjs/cors#readme).
+cors is licensed under the MIT License.
+Full license text is available in ./licenses/CORS_LICENSE.txt.
+
+This application uses dotenv (https://github.com/motdotla/dotenv#readme).
+dotenv is licensed under the BSD-2-Clause License.
+Full license text is available in ./licenses/DOTENV_LICENSE.txt.
+
+This application uses express (https://expressjs.com/en/).
+express is licensed under the MIT License.
+Full license text is available in ./licenses/EXPRESS_LICENSE.txt.
+
+This application uses express-rate-limit (https://github.com/express-rate-limit/express-rate-limit).
+express-rate-limit is licensed under the MIT License.
+Full license text is available in ./licenses/EXPRESS-RATE-LIMIT_LICENSE.txt.
+
+This application uses helmet (https://helmetjs.github.io/).
+helmet is licensed under the MIT License.
+Full license text is available in ./licenses/HELMET_LICENSE.txt.
+
+This application uses morgan (https://github.com/expressjs/morgan#readme).
+morgan is licensed under the MIT License.
+Full license text is available in ./licenses/MORGAN_LICENSE.txt.
+
+This application uses pg (https://github.com/brianc/node-postgres).
+pg is licensed under the MIT License.
+Full license text is available in ./licenses/PG_LICENSE.txt.

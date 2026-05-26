@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>3D-kartan Formulärsvar – Admin</title>
+
+  <link rel="stylesheet" href="/admin/vendor/bootstrap.min.css">
+
+  <style>
+    :root {
+      --panel-bg: #ffffff;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --soft: #f8fafc;
+    }
+    body { background: #f3f4f6; }
+    .app { padding: 16px; max-width: 1200px; margin: 0 auto; }
+    .card { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .card-header { background: var(--panel-bg); border-bottom: 1px solid var(--border); }
+    .card-body { background: var(--panel-bg); }
+    .subtle { color: var(--muted); font-size: 0.9rem; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .toolbar .spacer { flex: 1; }
+
+    .statusBox {
+      background: #0b1220;
+      color: #d1d5db;
+      padding: 12px;
+      border-radius: 10px;
+      max-height: 220px;
+      overflow: auto;
+      border: 1px solid #111827;
+    }
+
+    .toastHost { position: fixed; right: 16px; top: 16px; z-index: 10000; display: flex; flex-direction: column; gap: 8px; }
+    .toast {
+      min-width: 260px;
+      max-width: 520px;
+      background: #111827;
+      color: #fff;
+      border: 1px solid #1f2937;
+      border-radius: 10px;
+      padding: 10px 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+    .toast .title { font-weight: 700; margin-bottom: 2px; }
+    .toast .msg { color: #d1d5db; font-size: 13px; }
+    .toast.success { border-color: rgba(16,185,129,0.7); }
+    .toast.error { border-color: rgba(239,68,68,0.7); }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.65);
+      backdrop-filter: blur(2px);
+      z-index: 50;
+    }
+    .overlay.show { display: flex; }
+  </style>
+</head>
+
+<body>
+  <div class="toastHost" id="toastHost"></div>
+
+  <div class="app">
+    <div class="d-flex align-items-baseline justify-content-between mb-3">
+      <div>
+        <h1 class="mb-1">3D-kartan Formulärsvar – Admin</h1>
+        <div class="subtle">Välj ett formulär och lista alla inskickade svar (submissions).</div>
+      </div>
+      <div class="text-end">
+        <div class="subtle mb-1">
+          <span id="currentUserLabel" class="mono"></span>
+        </div>
+        <div class="subtle mb-2">
+          <span id="meta" class="mono"></span>
+        </div>
+        <button id="logoutBtn" class="btn btn-sm btn-outline-secondary">Logga ut</button>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-header">
+        <div class="toolbar">
+          <div class="d-flex align-items-center">
+            <label class="me-2 fw-bold">Formulär</label>
+            <select id="formsList" class="form-control" style="min-width: 420px;"></select>
+          </div>
+
+          <div class="d-flex align-items-center">
+            <label class="me-2 fw-bold">Sök</label>
+            <input id="search" class="form-control" style="min-width: 260px;" placeholder="Filtrera i JSON (client-side)" />
+          </div>
+
+          <div class="spacer"></div>
+
+          <button id="refreshBtn" class="btn btn-outline-secondary">Uppdatera</button>
+          <button id="exportBtn" class="btn btn-outline-primary">Exportera JSON</button>
+        </div>
+
+        <div class="subtle mt-2">
+          Hämtar formulär från <span class="mono">GET /3d-kartan/backend/admin/forms</span> och submissions från
+          <span class="mono">GET /3d-kartan/backend/admin/forms/:id/submissions</span>.
+        </div>
+      </div>
+
+      <div class="card-body position-relative">
+        <div id="overlay" class="overlay">
+          <div class="text-center">
+            <div class="spinner-border text-primary" role="status"></div>
+            <div class="mt-2">Jobbar…</div>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-sm table-bordered bg-white mb-0">
+            <thead>
+              <tr>
+                <th style="width: 220px;">Submission ID</th>
+                <th style="width: 180px;">Skapad</th>
+                <th style="width: 180px;">Uppdaterad</th>
+                <th style="width: 190px;">Koordinater</th>
+                <th>Data (JSON)</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+
+        <div class="mt-3">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <div class="fw-bold">Status (senaste svar)</div>
+            <button id="clearStatusBtn" class="btn btn-sm btn-outline-secondary">Rensa</button>
+          </div>
+          <pre id="status" class="statusBox mono mb-0">{}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/admin/submissions.js"></script>
+</body>
+</html>

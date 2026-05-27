@@ -150,7 +150,6 @@ function createApp() {
         const result = await pool.query(
           `
           SELECT
-            td_id,
             td_adress,
             td_kommund,
             ST_AsGeoJSON(geom) AS geometry
@@ -168,7 +167,6 @@ function createApp() {
             type: "Feature",
             geometry: JSON.parse(row.geometry),
             properties: {
-              td_id: row.td_id,
               td_adress: row.td_adress,
               td_kommund: row.td_kommund
             }
